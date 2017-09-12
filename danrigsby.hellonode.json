@@ -1,0 +1,96 @@
+{
+	"apiVersion": "v1beta3",
+	"kind": "List",
+	"items": [
+		{
+			"kind": "Namespace",
+			"apiVersion": "v1",
+			"metadata": {
+				"name": "danrigsby",
+				"labels": {
+					"name": "danrigsby"
+				}
+			}
+		},
+		{
+			"apiVersion": "v1",
+			"kind": "Service",
+			"metadata": {
+				"name": "hellonode",
+				"namespace": "danrigsby"
+			},
+			"spec": {
+				"selector": {
+					"app": "hellonode"
+				},
+				"ports": [
+					{
+						"name": "p8080",
+						"protocol": "TCP",
+						"port": 80,
+						"targetPort": 8080
+					}, 
+					{
+						"name": "manage",
+						"protocol": "TCP",
+						"port": 15373,
+						"targetPort": 15373
+					}
+				]
+			}
+		},
+		{
+			"apiVersion": "apps/v1beta1",
+			"kind": "Deployment",
+			"metadata": {
+				"name": "hellonode",
+				"namespace": "danrigsby",
+				"labels": {
+					"release": "mcet_210",
+					"product": "",
+					"cloud": "Marketing"
+				}
+			},
+			"spec": {
+				"replicas": 5,
+				"minReadySeconds": 30,
+				"strategy": { "type": "RollingUpdate", "rollingUpdate": { "maxSurge": 0, "maxUnavailable": 1 } },
+				"template": {
+					"metadata": {
+						"labels": {
+							"app": "hellonode",
+							"release": "mcet_210",
+							"product": "",
+							"cloud": "Marketing"
+						}
+					},
+					"spec": {
+						"containers": [
+							{
+								"name": "hellonode",
+								"image": "danrigsby/hellonode:1.0.4",
+								"ports": [
+									{
+										"name": "p8080",
+										"containerPort": 8080
+									}, 
+									{
+										"name": "manage",
+										"containerPort": 15373
+									}
+								],
+								"livenessProbe": { "httpGet": { "path": "/manage/health", "port": 15373 }, "initialDelaySeconds": 15, "timeoutSeconds": 2, "periodSeconds": 30 },
+								"env": [
+									{
+										"name": "NODE_ENV",
+										"value": "production"
+									}
+								]
+							}
+						]
+					}
+				}
+			}
+		}
+	]
+}
